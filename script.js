@@ -4,24 +4,33 @@ let explosions = [];
 let explosionLife = 100;
 let shootTimer = 0;
 let shotsPerSecond = 4;
+let friendlyMissiles = [];
+let gun = null;
 
 function setup() {
-    createCanvas(400, 400);
+    createCanvas(800, 500);
 
     player = createSprite(width / 2, height - 20, 20, 20);
     player.draw = DrawPlayer;
-}
 
+    gun = creatSprite(width / 2, height - 50, 25, 25);
+}
 
 function draw() {
     background(0, 0, 0);
 
     MovePlayer();
-
     Shoot();
     RemoveDeadExplosions();
 
     drawSprites();
+}
+
+function CreateFriendlyMissiles() {
+    let startPosition = gun.position;
+    let endPosition = player.position;
+
+    let missile = createSprite(startPosition.x, startPosition.y, 5, 5);
 }
 
 function RemoveDeadExplosions() {
@@ -62,6 +71,7 @@ function Shoot() {
         line(0, -5, 0, -20);
         line(5, 0, 20, 0);
         line(-5, 0, -20, 0);
+
         /*
         line(0, 0, 0, 50);
         line(0, 50, -10, 70);
