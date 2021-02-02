@@ -1,10 +1,19 @@
 let player = null;
 let playerSpeed = 10;
+
 let explosions = [];
 let explosionLife = 100;
+
 let shootTimer = 0;
 let shotsPerSecond = 4;
+
+let enemyShootTimer = 0;
+let enemyShotsPerSecond = 1;
+
+let friendlyMissiles = [];
 let gun = null;
+
+let enemyMissilesGroup
 
 function setup() {
     createCanvas(800, 500);
@@ -14,6 +23,8 @@ function setup() {
     player.draw = DrawPlayer;
 
     gun = createSprite(width / 2, height - 40, 20, 20);
+
+
 }
 
 function draw() {
@@ -21,23 +32,28 @@ function draw() {
 
     MovePlayer();
     Shoot();
-    RemoveDeadExplosions();
+
+    EnemyShootsMissile();
 
     drawSprites();
+}
+
+function EnemyShootsMissile() {
+    enemyShootTimer += deltaTime;
+    if (keyIsDown(32) && shootTimer >= 1000 / shotsPerSecond) {
+        CreateFriendlyMissiles();
+        shootTimer = 0;
+    }
 }
 
 function CreateFriendlyMissiles() {
     let startPosition = gun.position.copy();
     let endPosition = player.position.copy();
-
-    let direction = player.position.copy();
-    direction.sub(start);
-
-    let directionAngle = direction.heading();
+    let direction = p5.vector.sub(endPosition, startPosition);
 
     let missile = createSprite(start.x, start.y, 5, 5);
-    missile.setSpeed(5, directionAngle);
-    missile["goal"] = end;
+    missile.setSpeed(2, directionAngle);
+    missile["goal"] = endPosition;
     missile.draw = DrawFriendlyMissiles;
 }
 
@@ -46,7 +62,36 @@ function DrawFriendlyMissiles() {
 
     let currentPosition = this.position;
     let goalPosition = this.goal;
-    let distance = currentPosition.dist(goalPosition);
+    let distance = p5.vector.dist(this.position, this.goal);
+
+    if (distance < 5) {
+        CreateExplosion(currentPosition.x, currentPosition.y);
+        this.remove;
+    }
+} 
+
+function CreateEnemyMissiles() {
+    let startX = random(0, width);
+    let endPosition = createVector(endX, 0);
+    let startPosition = createVector(startX, 0);
+    let endX = random(0, width);
+    let direction = p5.vector.sub(endPosition, startPosition);
+
+    let missile = createSprite(start.x, start.y, 5, 5);
+    missile.setSpeed(5, directionAngle);
+    missile["goal"] = endPosition;
+
+    enemyMissilesGroup.add(missile);
+
+    missile.draw = DrawEnemyMissiles;
+}
+
+function DrawEnemyMissiles() {
+    circle(0, 0, this.width);
+
+    let currentPosition = this.position;
+    let goalPosition = this.goal;
+    let distance = p5.vector.dist(this.position, this.goal);
 
     if (distance < 5) {
         CreateExplosion(currentPosition.x, currentPosition.y);
@@ -64,7 +109,6 @@ function RemoveDeadExplosions() {
 function Shoot() {
     shootTimer += deltaTime;
     if (keyIsDown(32) && shootTimer >= 1000 / shotsPerSecond) {
-        CreateExplosion(player.position.x, player.position.y);
         CreateFriendlyMissiles();
         shootTimer = 0;
     }
@@ -72,15 +116,20 @@ function Shoot() {
 
 function CreateExplosion(x, y) {
     let explosion = createSprite(x, y, 5, 5);
-    explosion.life = 100;
+    explosion.life = explosionLife;
     explosion.draw = DrawExplosion;
-    explosions.push(explosion);
 }
 
 function DrawExplosion() {
     circle(0, 0, this.width);
     this.width++;
     this.height++;
+
+    this.overlap(enemyMissilesGroup, enemyMissileIsHit);
+}
+
+function EnemyMissileIsHit(explosion, enemyMissile) {
+    enemyMissile.remove();
 }
 
 function DrawPlayer() {
