@@ -2,6 +2,11 @@ let player = null;
 let gun = null;
 let enemyMissilesGroup = null;
 
+let city1 = null;
+let city2 = null
+
+let points = 0;
+
 // how fast the player can move
 let playerSpeed = 10;
 // how many milliseconds since the players' last shot
@@ -35,6 +40,14 @@ function setup() {
     gun = createSprite(width / 2, height - 50, 25, 25);
 
     enemyMissilesGroup = new Group();
+
+    city1 = createSprite(0 + 100, height - 10, 100, 20);
+    city1.draw = DrawCity;
+    city1["lifepoints"] = 3;
+
+    city2 = createSprite(width - 100, height - 10, 100, 20);
+    city2.draw = DrawCity;
+    city2["lifepoints"] = 3;
 }
 
 function draw() {
@@ -44,9 +57,55 @@ function draw() {
     Shoot();
 
     EnemyShootsMissile();
+    ShowLifePoints();
+    ShowPlayerPoints();
 
     drawSprites();
 }
+
+function ShowPlayerPoints() {
+    fill("white");
+    textsize(44);
+    text()
+}
+
+function ShowLifePoints() {
+    let city1LifePoints = city1.lifepoints.toString();
+    city1LifePoints += "/3";
+
+    fill("white");
+    textsize(24);
+    text(city1LifePoints, 100, 480);
+
+    let city2LifePoints = city1.lifepoints.toString();
+    city2LifePoints += "/3";
+
+    fill("white");
+    textsize(24);
+    text(city2LifePoints, 100, 480);
+}
+
+function ShowLifePointsCity(city) {
+    ShowLifePointsOfCity(city1);
+    ShowLifePointsOfCity(city2);
+}
+
+function DrawCity() {
+    rect(0, 0, this.width, this.height);
+
+    this.overlap(enemyMissilesGroup, CityIsHit);
+}
+
+function CityIshHit(city, enemyMissile) {
+    city.lifepoints--;
+
+    if (city.lifepoints <= 0) {
+        city.remove();
+    }
+
+    enemyMissile.remove();
+}
+
 
 function EnemyShootsMissile() { 
     enemyShootTimer += deltaTime;
